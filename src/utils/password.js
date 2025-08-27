@@ -1,0 +1,1 @@
+//Funções de hash/compare de senha (bcrypt)
