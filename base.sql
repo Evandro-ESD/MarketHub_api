@@ -1,6 +1,8 @@
 CREATE DATABASE IF NOT EXISTS market_hub;
 USE market_hub;
 
+
+
 -- Tabela de Usuáriosss
 CREATE TABLE Usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
