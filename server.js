@@ -17,6 +17,10 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
+//Rota de produtos
+const produtoRoutes = require('./src/routes/produtoRoutes');
+app.use('/api/produtos', produtoRoutes);
+
 // Middleware global de tratamento de erros
 app.use((err, req, res, next) => {
   console.error('Erro não tratado:', err);

@@ -1,30 +1,26 @@
+
 const express = require('express');
 const router = express.Router();
 
-
 const userController = require('../controllers/userController');
+
 const { verifyToken, verifyPerfil } = require('../middlewares/authMiddleware');
-// Buscar todos os usuários
-router.get('/', userController.getAllUsers);
+const ownerMiddleware = require('../middlewares/ownerMiddleware');
 
-// Criar usuário
-router.post('/', userController.createUser);
-
-// Editar usuário
-router.put('/:id_usuario', userController.updateUser);
-
-// Excluir usuário
-router.delete('/:id_usuario', userController.deleteUser);
-
-
-
-// Proteger todas as rotas (usuário precisa estar autenticado)
+// Proteger todas as rotas abaixo (usuário precisa estar autenticado)
 router.use(verifyToken);
 
-// Exemplo: rota que só permite perfil 'VENDEDOR'
+
+// Buscar todos os usuários (VENDEDOR e COMPRADOR podem visualizar)
+router.get('/', verifyPerfil('VENDEDOR'), userController.getAllUsers);
+router.get('/', verifyPerfil('COMPRADOR'), userController.getAllUsers);
+
+
+// Criar apenas VENDEDOR
 router.post('/', verifyPerfil('VENDEDOR'), userController.createUser);
 
-// Exemplo: rota que só permite perfil 'COMPRADOR'
-router.post('/', verifyPerfil('COMPRADOR'), userController.createUser);
+// Editar e excluir apenas o próprio usuário VENDEDOR
+router.put('/:id_usuario', verifyPerfil('VENDEDOR'), ownerMiddleware, userController.updateUser);
+router.delete('/:id_usuario', verifyPerfil('VENDEDOR'), ownerMiddleware, userController.deleteUser);
 
 module.exports = router;

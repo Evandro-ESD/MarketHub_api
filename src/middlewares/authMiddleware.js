@@ -1,5 +1,3 @@
-//Valida JWT
-
 // Middleware de autenticação e autorização baseado em JWT
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
