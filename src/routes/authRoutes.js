@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
 
-// Exemplo de rota
-// router.post('/login', (req, res) => res.send('Login'));
+// Rota de login
+router.post('/login', authController.login);
 
 module.exports = router;
