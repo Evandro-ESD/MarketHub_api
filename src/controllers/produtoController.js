@@ -11,10 +11,13 @@ exports.getAllProdutos = async (req, res, next) => {
 };
 
 // Criar produto
+
 exports.createProduto = async (req, res, next) => {
   try {
-    const { nome_produto, descricao, preco, estoque, foto } = req.body;
+    const { nome_produto, descricao, preco, estoque } = req.body;
     const id_vendedor = req.user.id_usuario;
+    // Se imagem enviada, salva caminho; senão, salva vazio
+    const foto = req.file ? req.file.path.replace(/\\/g, '/') : '';
     const [result] = await pool.query(
       'INSERT INTO produtos (nome_produto, descricao, preco, estoque, id_vendedor, foto) VALUES (?, ?, ?, ?, ?, ?)',
       [nome_produto, descricao, preco, estoque, id_vendedor, foto]

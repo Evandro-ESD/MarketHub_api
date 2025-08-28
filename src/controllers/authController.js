@@ -1,5 +1,7 @@
+
 const pool = require('../../db');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 // Login: valida usuário e gera token JWT
@@ -11,9 +13,10 @@ exports.login = async (req, res, next) => {
 			return res.status(401).json({ message: 'Usuário não encontrado' });
 		}
 		const usuario = rows[0];
-		if (usuario.senha !== senha) {
-			return res.status(401).json({ message: 'Senha incorreta' });
-		}
+			const senhaValida = await bcrypt.compare(senha, usuario.senha);
+			if (!senhaValida) {
+				return res.status(401).json({ message: 'Senha incorreta' });
+			}
 		// Dados para o token
 		const payload = {
 			id_usuario: usuario.id_usuario,
