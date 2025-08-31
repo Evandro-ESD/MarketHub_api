@@ -13,10 +13,10 @@ exports.login = async (req, res, next) => {
 			return res.status(401).json({ message: 'Usuário não encontrado' });
 		}
 		const usuario = rows[0];
-			const senhaValida = await bcrypt.compare(senha, usuario.senha);
-			if (!senhaValida) {
-				return res.status(401).json({ message: 'Senha incorreta' });
-			}
+		const senhaValida = await bcrypt.compare(senha, usuario.senha);
+		if (!senhaValida) {
+			return res.status(401).json({ message: 'Senha incorreta' });
+		}
 		// Dados para o token
 		const payload = {
 			id_usuario: usuario.id_usuario,
@@ -24,7 +24,14 @@ exports.login = async (req, res, next) => {
 			perfil: usuario.perfil
 		};
 		const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-		res.json({ token });
+		// res.json({ token }); /// Original alterado por Evandro
+		res.json({
+			token,
+			nome: usuario.nome,
+			foto: usuario.foto, // se tiver campo no banco
+			perfil: usuario.perfil
+		})
+
 	} catch (err) {
 		next(err);
 	}
