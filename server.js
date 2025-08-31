@@ -20,6 +20,7 @@ app.use('/api/users', userRoutes);
 const { verifyToken } = require('./src/middlewares/authMiddleware');
 const path = require('path');
 app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
+// app.get('/uploads/produtos/:img', verifyToken, (req, res) => { // SE A INTENSÃO É QUE AS IMAGENS SEJAM VISTAS POR TODOS USAR SEM O VERIFYTOKEN
   const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
   res.sendFile(filePath);
 });

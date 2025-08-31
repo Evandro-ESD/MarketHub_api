@@ -34,7 +34,7 @@ exports.verifyPerfil = (perfil) => (req, res, next) => {
 //   VENDEDOR: 2,
 // };
 
-// // Middleware gerador para verificar perfil mínimo do usuário
+// // // Middleware gerador para verificar perfil mínimo do usuário
 // exports.verifyPerfil = (perfilMinimo) => (req, res, next) => {
 //   if (!req.user) return res.status(401).json({ message: 'Usuário não autenticado' });
 
