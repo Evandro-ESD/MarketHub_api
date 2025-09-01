@@ -26,3 +26,33 @@ exports.verifyPerfil = (perfil) => (req, res, next) => {
   if (req.user.perfil !== perfil) return res.status(403).json({ message: 'Acesso negado' });
   next();
 };
+
+/////////////////////// alterações /////////////////////
+// // Hierarquia de perfis
+// const perfisHierarquia = {
+//   COMPRADOR: 1,
+//   VENDEDOR: 2,
+// };
+
+// // // Middleware gerador para verificar perfil mínimo do usuário
+// exports.verifyPerfil = (perfilMinimo) => (req, res, next) => {
+//   if (!req.user) return res.status(401).json({ message: 'Usuário não autenticado' });
+
+//   const nivelUsuario = perfisHierarquia[req.user.perfil] || 0;
+//   const nivelMinimo = perfisHierarquia[perfilMinimo] || 0;
+
+//   if (nivelUsuario < nivelMinimo) {
+//     return res.status(403).json({ message: 'Acesso negado' });
+//   }
+
+//   next();
+// };
+
+///////////////////// explicação   ///////////////////
+// Como funciona:
+
+// verifyPerfil('COMPRADOR'): permite COMPRADOR e VENDEDOR.
+
+// verifyPerfil('VENDEDOR'): permite apenas VENDEDOR.
+
+// Se um COMPRADOR tentar acessar rota de VENDEDOR → recebe 403 Acesso negado.

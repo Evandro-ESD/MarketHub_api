@@ -1,8 +1,6 @@
 CREATE DATABASE IF NOT EXISTS market_hub;
 USE market_hub;
 
-
-
 -- Tabela de Usuáriosss
 CREATE TABLE Usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
@@ -61,6 +59,11 @@ INSERT INTO market_hub.produtos (nome_produto, descricao, preco, estoque, id_ven
 ('Teclado Mecânico Logitech', 'Teclado mecânico RGB switches blue', 450.00, 20, 4),        -- Ana
 ('Monitor LG UltraWide', 'Monitor 29 polegadas Full HD UltraWide', 1600.00, 8, 2);         -- Maria
 
+INSERT INTO market_hub.pedidos (id_comprador, data_pedido, status_pedido, total) VALUES
+(1, '2025-08-25 14:32:00', 'CRIADO', 0.00), -- João Silva
+(3, '2025-08-26 09:15:00', 'CRIADO', 0.00), -- Carlos Souza
+(5, '2025-08-26 18:47:00', 'CRIADO', 0.00); -- Pedro Rocha
+
 -- Pedido 1 (João Silva)
 INSERT INTO market_hub.itenspedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES
 (1, 1, 1, 3500.00),  -- Notebook Dell (Maria)
@@ -75,10 +78,6 @@ INSERT INTO market_hub.itenspedido (id_pedido, id_produto, quantidade, preco_uni
 INSERT INTO market_hub.itenspedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES
 (3, 5, 2, 1600.00);  -- 2x Monitor LG (Maria)
 
-INSERT INTO market_hub.pedidos (id_comprador, data_pedido, status_pedido, total) VALUES
-(1, '2025-08-25 14:32:00', 'CRIADO', 0.00), -- João Silva
-(3, '2025-08-26 09:15:00', 'CRIADO', 0.00), -- Carlos Souza
-(5, '2025-08-26 18:47:00', 'CRIADO', 0.00); -- Pedro Rocha
 
 alter table market_hub.produtos
 ADD COLUMN foto VARCHAR(255) NULL AFTER descricao;
