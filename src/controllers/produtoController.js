@@ -1,5 +1,7 @@
 const pool = require('../../db');
 const path = require('path');
+const crypto = require('crypto');
+const fs = require('fs');
 
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
@@ -24,12 +26,18 @@ exports.createProduto = async (req, res, next) => {
       return res.status(400).json({ message: 'Nenhuma foto foi enviada.' });
     }
 
-    // Log para verificar o arquivo recebido
-    console.log('Arquivo recebido:', req.file);
+    // Gerar identificador seguro para a foto
+    const fotoId = crypto.randomBytes(16).toString('hex');
+    console.log('Identificador seguro gerado para a foto:', fotoId);
 
-    // Salva o caminho relativo da foto
-    const foto = path.relative(path.join(__dirname, '../../'), req.file.path).replace(/\\/g, '/');
-    console.log('Caminho da foto salvo no banco:', foto);
+    // Renomear o arquivo para usar o identificador seguro
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const novoNomeArquivo = `${fotoId}${ext}`;
+    const novoCaminho = path.join(path.dirname(req.file.path), novoNomeArquivo);
+    fs.renameSync(req.file.path, novoCaminho);
+
+    // Salvar apenas o identificador no banco
+    const foto = fotoId;
 
     const [result] = await pool.query(
       'INSERT INTO produtos (nome_produto, descricao, preco, estoque, id_vendedor, foto) VALUES (?, ?, ?, ?, ?, ?)',
