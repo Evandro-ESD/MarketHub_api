@@ -1,4 +1,5 @@
 const pool = require('../../db');
+const path = require('path');
 
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
@@ -16,14 +17,28 @@ exports.createProduto = async (req, res, next) => {
   try {
     const { nome_produto, descricao, preco, estoque } = req.body;
     const id_vendedor = req.user.id_usuario;
-    // Se imagem enviada, salva caminho; senão, salva vazio
-    const foto = req.file ? req.file.path.replace(/\\/g, '/') : '';
+
+    // Verifica se o arquivo foi recebido
+    if (!req.file) {
+      console.error('Nenhum arquivo foi recebido pelo middleware uploadProduto.');
+      return res.status(400).json({ message: 'Nenhuma foto foi enviada.' });
+    }
+
+    // Log para verificar o arquivo recebido
+    console.log('Arquivo recebido:', req.file);
+
+    // Salva o caminho relativo da foto
+    const foto = path.relative(path.join(__dirname, '../../'), req.file.path).replace(/\\/g, '/');
+    console.log('Caminho da foto salvo no banco:', foto);
+
     const [result] = await pool.query(
       'INSERT INTO produtos (nome_produto, descricao, preco, estoque, id_vendedor, foto) VALUES (?, ?, ?, ?, ?, ?)',
       [nome_produto, descricao, preco, estoque, id_vendedor, foto]
     );
+
     res.status(201).json({ id_produto: result.insertId, nome_produto, descricao, preco, estoque, id_vendedor, foto });
   } catch (err) {
+    console.error('Erro ao criar produto:', err);
     next(err);
   }
 };
