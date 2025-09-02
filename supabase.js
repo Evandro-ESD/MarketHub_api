@@ -15,6 +15,8 @@ require('dotenv').config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
 
 // Validação crítica: A aplicação não deve iniciar sem as credenciais do Supabase.
 if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -25,7 +27,7 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 // Criação do cliente Supabase para o backend.
 // Usamos a 'service_role' key para ter acesso administrativo total,
 // o que permite contornar as políticas de Row Level Security (RLS).
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, supabaseKey, {
   auth: {
     // Desabilita o auto-refresh do token e a persistência de sessão no lado do servidor.
     // É uma boa prática, pois a chave de serviço não expira e não há sessão de usuário para gerenciar.
