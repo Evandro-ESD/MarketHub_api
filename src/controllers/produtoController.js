@@ -1,47 +1,15 @@
 const supabase = require('../../supabase'); // 1. Importe o cliente Supabase
 const path = require('path');
 const crypto = require('crypto');
-<<<<<<< HEAD
-const fs = require('fs'); // Adiciona a importação do módulo fs para verificar a existência de arquivos
-=======
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
   try {
-<<<<<<< HEAD
-    const [rows] = await pool.query('SELECT * FROM produtos');
-
-    // Adiciona o caminho completo da imagem para cada produto
-    const produtosComCaminhoCompleto = rows.map(produto => {
-      let foto = produto.foto;
-
-      // Adiciona a extensão .jpg se estiver ausente
-      if (foto && !foto.includes('.')) {
-        foto += '.jpg';
-      }
-
-      // Verifica se o arquivo existe antes de retornar o caminho completo
-      const caminhoFoto = path.join(__dirname, '../../uploads/produtos', foto);
-      if (foto && !fs.existsSync(caminhoFoto)) {
-        console.warn(`Arquivo não encontrado: ${caminhoFoto}`);
-        foto = null; // Define como null se o arquivo não existir
-      }
-
-      return {
-        ...produto,
-        foto: foto ? `${req.protocol}://${req.get('host')}/uploads/produtos/${foto}` : null
-      };
-    });
-
-    res.json(produtosComCaminhoCompleto);
-=======
     // 2. Substitua pool.query por supabase.from().select()
     const { data, error } = await supabase.from('produtos').select('*');
 
     if (error) throw error; // Lança o erro para o catch
     res.json(data);
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
   } catch (err) {
     next(err);
   }
@@ -62,14 +30,6 @@ exports.createProduto = async (req, res, next) => {
 
     // 3. Lógica de upload para o Supabase Storage
     const ext = path.extname(req.file.originalname).toLowerCase();
-<<<<<<< HEAD
-    const novoNomeArquivo = `${fotoId}${ext}`; // Inclui a extensão
-    const novoCaminho = path.join(path.dirname(req.file.path), novoNomeArquivo);
-    fs.renameSync(req.file.path, novoCaminho);
-
-    // Salvar o nome completo no banco
-    const foto = novoNomeArquivo;
-=======
     const novoNomeArquivo = `${id_vendedor}-${crypto.randomBytes(16).toString('hex')}${ext}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -78,7 +38,6 @@ exports.createProduto = async (req, res, next) => {
         contentType: req.file.mimetype,
         upsert: false,
       });
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 
     if (uploadError) throw uploadError;
 
@@ -109,46 +68,6 @@ exports.createProduto = async (req, res, next) => {
 exports.updateProduto = async (req, res, next) => {
   try {
     const { id_produto } = req.params;
-<<<<<<< HEAD
-    if(!req.body){
-      console.warn('[UPDATE PRODUTO] req.body undefined antes do multer parsing. Content-Type:', req.headers['content-type']);
-    }
-    const body = req.body || {};
-    // Buscar produto atual para preservar campos não enviados
-    const [exist] = await pool.query('SELECT * FROM produtos WHERE id_produto = ?', [id_produto]);
-    if (!exist.length) return res.status(404).json({ message: 'Produto não encontrado' });
-    const atual = exist[0];
-
-    // Campos que podem chegar (multipart form -> strings)
-    const nome_produto = body.nome_produto ?? atual.nome_produto;
-    const descricao = body.descricao ?? atual.descricao;
-    // Converter números com fallback
-    let preco = body.preco !== undefined ? parseFloat(body.preco) : atual.preco;
-    if (isNaN(preco)) preco = atual.preco;
-    let estoque = body.estoque !== undefined ? parseInt(body.estoque) : atual.estoque;
-    if (isNaN(estoque)) estoque = atual.estoque;
-
-    // Foto: se veio novo arquivo usar caminho; se veio string vazia significa remover; senão manter atual
-    let foto = atual.foto;
-    if (req.file) {
-      foto = req.file.path.replace(/\\/g, '/');
-    } else if (body.foto === '') {
-      foto = '';
-    }
-
-    console.log('[UPDATE PRODUTO] id:', id_produto, {
-      contentType: req.headers['content-type'],
-      bodyRecebido: body,
-      temFile: !!req.file,
-      valoresAplicados: { nome_produto, descricao, preco, estoque, foto }
-    });
-
-    const [result] = await pool.query(
-      'UPDATE produtos SET nome_produto = ?, descricao = ?, preco = ?, estoque = ?, foto = ? WHERE id_produto = ?',
-      [nome_produto, descricao, preco, estoque, foto, id_produto]
-    );
-    if (result.affectedRows === 0) {
-=======
     const { nome_produto, descricao, preco, estoque } = req.body; // Foto é tratada separadamente
 
     // 6. Substitua o UPDATE
@@ -161,7 +80,6 @@ exports.updateProduto = async (req, res, next) => {
 
     if (error) throw error;
     if (!data) {
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
     res.json(data);
