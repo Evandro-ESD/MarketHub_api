@@ -1,32 +1,57 @@
 // Início do servidor
 // Servidor Express principal do backend
 const express = require('express');
-const app = express();
 const cors = require('cors');
-const path = require('path'); // Importa o módulo path
+const path = require('path');
+const supabase = require('./supabase'); // Cliente Supabase
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
+const produtoRoutes = require('./src/routes/produtoRoutes');
+const { verifyToken } = require('./src/middlewares/authMiddleware');
+
+const app = express();
 const PORT = process.env.PORT || 3049;
 
 // Middlewares globais
 app.use(cors());
 app.use(express.json());
 
-// Servir arquivos estáticos do diretório uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Rota de exemplo para testar a conexão com o Supabase
+app.get('/', (req, res) => {
+  res.send('API MarketHub com Supabase está funcionando!');
+});
 
-// Rotas de autenticação
+// Rota para buscar todos os produtos direto do Supabase
+app.get('/api/produtos', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('produtos')
+      .select('*');
+    if (error) {
+      console.error('Erro do Supabase:', error.message);
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(200).json(data);
+  } catch (e) {
+    console.error('Erro inesperado no servidor:', e.message);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
+// Rotas de autenticação e usuários
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-// Rota pública para servir imagens de produtos
-app.get('/uploads/produtos/:img', (req, res) => {
+// Rota protegida para servir imagens de produtos
+const { verifyToken } = require('./src/middlewares/authMiddleware');
+const path = require('path');
+app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
+// app.get('/uploads/produtos/:img', verifyToken, (req, res) => { // SE A INTENSÃO É QUE AS IMAGENS SEJAM VISTAS POR TODOS USAR SEM O VERIFYTOKEN
   const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
   res.sendFile(filePath);
 });
 
-//Rota de produtos
-const produtoRoutes = require('./src/routes/produtoRoutes');
+// Rotas de produtos (implementação própria)
 app.use('/api/produtos', produtoRoutes);
 
 // Rotas de vendas (relatórios do vendedor)
