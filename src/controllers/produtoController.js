@@ -1,11 +1,15 @@
-const pool = require('../../db');
+const supabase = require('../../supabase'); // 1. Importe o cliente Supabase
 const path = require('path');
 const crypto = require('crypto');
+<<<<<<< HEAD
 const fs = require('fs'); // Adiciona a importação do módulo fs para verificar a existência de arquivos
+=======
+>>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
   try {
+<<<<<<< HEAD
     const [rows] = await pool.query('SELECT * FROM produtos');
 
     // Adiciona o caminho completo da imagem para cada produto
@@ -31,6 +35,13 @@ exports.getAllProdutos = async (req, res, next) => {
     });
 
     res.json(produtosComCaminhoCompleto);
+=======
+    // 2. Substitua pool.query por supabase.from().select()
+    const { data, error } = await supabase.from('produtos').select('*');
+
+    if (error) throw error; // Lança o erro para o catch
+    res.json(data);
+>>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
   } catch (err) {
     next(err);
   }
@@ -49,25 +60,45 @@ exports.createProduto = async (req, res, next) => {
       return res.status(400).json({ message: 'Nenhuma foto foi enviada.' });
     }
 
-    // Gerar identificador seguro para a foto
-    const fotoId = crypto.randomBytes(16).toString('hex');
-    console.log('Identificador seguro gerado para a foto:', fotoId);
-
-    // Renomear o arquivo para usar o identificador seguro
+    // 3. Lógica de upload para o Supabase Storage
     const ext = path.extname(req.file.originalname).toLowerCase();
+<<<<<<< HEAD
     const novoNomeArquivo = `${fotoId}${ext}`; // Inclui a extensão
     const novoCaminho = path.join(path.dirname(req.file.path), novoNomeArquivo);
     fs.renameSync(req.file.path, novoCaminho);
 
     // Salvar o nome completo no banco
     const foto = novoNomeArquivo;
+=======
+    const novoNomeArquivo = `${id_vendedor}-${crypto.randomBytes(16).toString('hex')}${ext}`;
 
-    const [result] = await pool.query(
-      'INSERT INTO produtos (nome_produto, descricao, preco, estoque, id_vendedor, foto) VALUES (?, ?, ?, ?, ?, ?)',
-      [nome_produto, descricao, preco, estoque, id_vendedor, foto]
-    );
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('fotos-produtos') // Nome do seu "bucket" no Supabase Storage
+      .upload(novoNomeArquivo, req.file.buffer, { // <-- Usar req.file.buffer diretamente
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
+>>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 
-    res.status(201).json({ id_produto: result.insertId, nome_produto, descricao, preco, estoque, id_vendedor, foto });
+    if (uploadError) throw uploadError;
+
+    // 4. Obtenha a URL pública para salvar no banco
+    const { data: publicUrlData } = supabase.storage
+      .from('fotos-produtos')
+      .getPublicUrl(novoNomeArquivo);
+
+    const fotoUrl = publicUrlData.publicUrl;
+
+    // 5. Substitua o INSERT
+    const { data: newProduct, error: insertError } = await supabase
+      .from('produtos')
+      .insert({ nome_produto, descricao, preco, estoque, id_vendedor, foto: fotoUrl })
+      .select() // .select() retorna o registro inserido
+      .single(); // .single() para retornar um objeto em vez de um array
+
+    if (insertError) throw insertError;
+
+    res.status(201).json(newProduct);
   } catch (err) {
     console.error('Erro ao criar produto:', err);
     next(err);
@@ -78,6 +109,7 @@ exports.createProduto = async (req, res, next) => {
 exports.updateProduto = async (req, res, next) => {
   try {
     const { id_produto } = req.params;
+<<<<<<< HEAD
     if(!req.body){
       console.warn('[UPDATE PRODUTO] req.body undefined antes do multer parsing. Content-Type:', req.headers['content-type']);
     }
@@ -116,9 +148,23 @@ exports.updateProduto = async (req, res, next) => {
       [nome_produto, descricao, preco, estoque, foto, id_produto]
     );
     if (result.affectedRows === 0) {
+=======
+    const { nome_produto, descricao, preco, estoque } = req.body; // Foto é tratada separadamente
+
+    // 6. Substitua o UPDATE
+    const { data, error } = await supabase
+      .from('produtos')
+      .update({ nome_produto, descricao, preco, estoque })
+      .eq('id_produto', id_produto) // A cláusula WHERE
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) {
+>>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
-    res.json({ id_produto, nome_produto, descricao, preco, estoque, foto });
+    res.json(data);
   } catch (err) {
   console.error('[UPDATE PRODUTO ERRO]', err);
     next(err);
@@ -129,13 +175,40 @@ exports.updateProduto = async (req, res, next) => {
 exports.deleteProduto = async (req, res, next) => {
   try {
     const { id_produto } = req.params;
-    const [result] = await pool.query(
-      'DELETE FROM produtos WHERE id_produto = ?',
-      [id_produto]
-    );
-    if (result.affectedRows === 0) {
+
+    // 1. Primeiro, buscar o produto para obter a URL da foto antes de deletar
+    const { data: produto, error: fetchError } = await supabase
+      .from('produtos')
+      .select('foto')
+      .eq('id_produto', id_produto)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      // Ignora o erro 'PGRST116' que significa "0 linhas retornadas", pois tratamos isso abaixo
+      throw fetchError;
+    }
+    if (!produto) {
       return res.status(404).json({ message: 'Produto não encontrado' });
     }
+
+    // 2. Excluir o registro do produto no banco de dados
+    const { error: deleteError } = await supabase
+      .from('produtos')
+      .delete()
+      .eq('id_produto', id_produto);
+
+    if (deleteError) throw deleteError;
+
+    // 3. Se o registro foi excluído e havia uma foto, apagar o arquivo do Storage
+    if (produto.foto) {
+      const nomeArquivo = produto.foto.split('/').pop();
+      const { error: storageError } = await supabase.storage.from('fotos-produtos').remove([nomeArquivo]);
+      if (storageError) {
+        // Não retorna erro ao cliente, mas loga no servidor para possível limpeza manual
+        console.error(`Falha ao excluir o arquivo ${nomeArquivo} do storage:`, storageError);
+      }
+    }
+
     res.json({ message: 'Produto excluído com sucesso' });
   } catch (err) {
     next(err);
