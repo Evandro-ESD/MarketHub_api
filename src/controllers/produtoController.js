@@ -1,13 +1,36 @@
 const pool = require('../../db');
 const path = require('path');
 const crypto = require('crypto');
-const fs = require('fs');
+const fs = require('fs'); // Adiciona a importação do módulo fs para verificar a existência de arquivos
 
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
   try {
     const [rows] = await pool.query('SELECT * FROM produtos');
-    res.json(rows);
+
+    // Adiciona o caminho completo da imagem para cada produto
+    const produtosComCaminhoCompleto = rows.map(produto => {
+      let foto = produto.foto;
+
+      // Adiciona a extensão .jpg se estiver ausente
+      if (foto && !foto.includes('.')) {
+        foto += '.jpg';
+      }
+
+      // Verifica se o arquivo existe antes de retornar o caminho completo
+      const caminhoFoto = path.join(__dirname, '../../uploads/produtos', foto);
+      if (foto && !fs.existsSync(caminhoFoto)) {
+        console.warn(`Arquivo não encontrado: ${caminhoFoto}`);
+        foto = null; // Define como null se o arquivo não existir
+      }
+
+      return {
+        ...produto,
+        foto: foto ? `${req.protocol}://${req.get('host')}/uploads/produtos/${foto}` : null
+      };
+    });
+
+    res.json(produtosComCaminhoCompleto);
   } catch (err) {
     next(err);
   }
@@ -32,12 +55,12 @@ exports.createProduto = async (req, res, next) => {
 
     // Renomear o arquivo para usar o identificador seguro
     const ext = path.extname(req.file.originalname).toLowerCase();
-    const novoNomeArquivo = `${fotoId}${ext}`;
+    const novoNomeArquivo = `${fotoId}${ext}`; // Inclui a extensão
     const novoCaminho = path.join(path.dirname(req.file.path), novoNomeArquivo);
     fs.renameSync(req.file.path, novoCaminho);
 
-    // Salvar apenas o identificador no banco
-    const foto = fotoId;
+    // Salvar o nome completo no banco
+    const foto = novoNomeArquivo;
 
     const [result] = await pool.query(
       'INSERT INTO produtos (nome_produto, descricao, preco, estoque, id_vendedor, foto) VALUES (?, ?, ?, ?, ?, ?)',
