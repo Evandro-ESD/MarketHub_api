@@ -117,20 +117,6 @@ exports.deleteProduto = async (req, res, next) => {
 // Buscar produtos do vendedor logado
 exports.getProdutosByToken = async (req, res, next) => {
   try {
-<<<<<<< HEAD
-    const id_vendedor = req.user.id_usuario; // vem do token decodificado
-
-    const [rows] = await pool.query(
-      'SELECT * FROM produtos WHERE id_vendedor = ?',
-      [id_vendedor]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Nenhum produto encontrado para este vendedor.' });
-    }
-
-    res.json(rows);
-=======
     const id_vendedor = req.user.id_usuario;
 
     const { data, error } = await supabase
@@ -144,7 +130,6 @@ exports.getProdutosByToken = async (req, res, next) => {
     }
 
     res.json(data);
->>>>>>> 8c4726dfb24b08ac103ab3fb4ae803266508ce42
   } catch (err) {
     console.error('Erro ao buscar produtos do vendedor logado:', err);
     next(err);
