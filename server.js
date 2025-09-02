@@ -1,21 +1,29 @@
 // Início do servidor
-
 // Servidor Express principal do backend
 const express = require('express');
+const app = express();
 const cors = require('cors');
-
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
-const app = express();
 const PORT = process.env.PORT || 3049;
 
 // Middlewares globais
 app.use(cors());
 app.use(express.json());
 
+
 // Rotas de autenticação
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+
+// Rota protegida para servir imagens de produtos
+const { verifyToken } = require('./src/middlewares/authMiddleware');
+const path = require('path');
+app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
+// app.get('/uploads/produtos/:img', verifyToken, (req, res) => { // SE A INTENSÃO É QUE AS IMAGENS SEJAM VISTAS POR TODOS USAR SEM O VERIFYTOKEN
+  const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
+  res.sendFile(filePath);
+});
 
 //Rota de produtos
 const produtoRoutes = require('./src/routes/produtoRoutes');
