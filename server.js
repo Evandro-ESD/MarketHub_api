@@ -28,6 +28,10 @@ app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
 const produtoRoutes = require('./src/routes/produtoRoutes');
 app.use('/api/produtos', produtoRoutes);
 
+// Rotas de vendas (relatórios do vendedor)
+const vendasRoutes = require('./src/routes/vendasRoutes');
+app.use('/api/vendas', vendasRoutes);
+
 // Middleware global de tratamento de erros
 app.use((err, req, res, next) => {
   console.error('Erro não tratado:', err);
