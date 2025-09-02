@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 });
 
 // Rota para buscar todos os produtos direto do Supabase
-app.get('/api/produtos-supabase', async (req, res) => {
+app.get('/api/produtos', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('produtos')
