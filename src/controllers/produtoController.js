@@ -3,6 +3,12 @@ const pool = require('../../db');
 // Buscar todos os produtos
 exports.getAllProdutos = async (req, res, next) => {
   try {
+    const { last } = req.query;
+    if (last) {
+      const limit = Math.min(parseInt(last) || 5, 20);
+      const [rows] = await pool.query('SELECT * FROM produtos ORDER BY id_produto DESC LIMIT ?', [limit]);
+      return res.json(rows);
+    }
     const [rows] = await pool.query('SELECT * FROM produtos');
     res.json(rows);
   } catch (err) {

@@ -32,6 +32,10 @@ app.use('/api/produtos', produtoRoutes);
 const vendasRoutes = require('./src/routes/vendasRoutes');
 app.use('/api/vendas', vendasRoutes);
 
+// Rotas de pedidos (checkout do comprador)
+const pedidosRoutes = require('./src/routes/pedidosRoutes');
+app.use('/api/pedidos', pedidosRoutes);
+
 // Middleware global de tratamento de erros
 app.use((err, req, res, next) => {
   console.error('Erro não tratado:', err);
