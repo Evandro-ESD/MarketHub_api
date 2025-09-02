@@ -10,7 +10,19 @@ exports.getAllProdutos = async (req, res, next) => {
     if (last) {
       const limit = Math.min(parseInt(last) || 5, 20);
       const [rows] = await pool.query('SELECT * FROM produtos ORDER BY id_produto DESC LIMIT ?', [limit]);
-      return res.json(rows);
+      const normalizados = rows.map(produto => {
+        let foto = produto.foto;
+        if (foto && !foto.includes('.')) {
+          foto += '.jpg';
+        }
+        if (foto) {
+          foto = `${req.protocol}://${req.get('host')}/uploads/produtos/${foto}`;
+        } else {
+          foto = null;
+        }
+        return { ...produto, foto };
+      });
+      return res.json(normalizados);
     }
     const [rows] = await pool.query('SELECT * FROM produtos');
 
@@ -105,7 +117,8 @@ exports.updateProduto = async (req, res, next) => {
     // Foto: se veio novo arquivo usar caminho; se veio string vazia significa remover; senão manter atual
     let foto = atual.foto;
     if (req.file) {
-      foto = req.file.path.replace(/\\/g, '/');
+      // nome do arquivo salvo pelo multer (uploadProduto.js)
+      foto = req.file.filename;
     } else if (body.foto === '') {
       foto = '';
     }
