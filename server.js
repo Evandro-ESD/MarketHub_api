@@ -42,9 +42,7 @@ app.get('/api/produtos', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-// Rota protegida para servir imagens de produtos
-const { verifyToken } = require('./src/middlewares/authMiddleware');
-const path = require('path');
+// Rota para servir imagens de produtos (remova verifyToken se quiser público)
 app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
 // app.get('/uploads/produtos/:img', verifyToken, (req, res) => { // SE A INTENSÃO É QUE AS IMAGENS SEJAM VISTAS POR TODOS USAR SEM O VERIFYTOKEN
   const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
