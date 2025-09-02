@@ -14,7 +14,6 @@ exports.getAllProdutos = async (req, res, next) => {
 };
 
 // Criar produto
-
 exports.createProduto = async (req, res, next) => {
   try {
     const { nome_produto, descricao, preco, estoque } = req.body;
@@ -82,6 +81,27 @@ exports.deleteProduto = async (req, res, next) => {
     }
     res.json({ message: 'Produto excluído com sucesso' });
   } catch (err) {
+    next(err);
+  }
+};
+
+// Buscar produtos do vendedor logado
+exports.getProdutosByToken = async (req, res, next) => {
+  try {
+    const id_vendedor = req.user.id_usuario; // vem do token decodificado
+
+    const [rows] = await pool.query(
+      'SELECT * FROM produtos WHERE id_vendedor = ?',
+      [id_vendedor]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Nenhum produto encontrado para este vendedor.' });
+    }
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Erro ao buscar produtos do vendedor logado:', err);
     next(err);
   }
 };
