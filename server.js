@@ -2,12 +2,8 @@
 // Servidor Express principal do backend
 const express = require('express');
 const cors = require('cors');
-<<<<<<< HEAD
-const path = require('path'); // Importa o módulo path
-=======
 const path = require('path');
 const supabase = require('./supabase'); // Cliente Supabase
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const produtoRoutes = require('./src/routes/produtoRoutes');
@@ -20,15 +16,10 @@ const PORT = process.env.PORT || 3049;
 app.use(cors());
 app.use(express.json());
 
-<<<<<<< HEAD
-// Servir arquivos estáticos do diretório uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-=======
 // Rota de exemplo para testar a conexão com o Supabase
 app.get('/', (req, res) => {
   res.send('API MarketHub com Supabase está funcionando!');
 });
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
 
 // Rota para buscar todos os produtos direto do Supabase
 app.get('/api/produtos', async (req, res) => {
@@ -51,18 +42,13 @@ app.get('/api/produtos', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-<<<<<<< HEAD
+// <<<<<<< HEAD
 // Rota pública para servir imagens de produtos
 app.get('/uploads/produtos/:img', (req, res) => {
-=======
+// =======
 // Rota protegida para servir imagens de produtos
-app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
->>>>>>> 618e272afaa1a1eebf8497b7c0af0bd9a1f8e735
-  const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
-  res.sendFile(filePath);
 });
 
-// Rotas de produtos (implementação própria)
 app.use('/api/produtos', produtoRoutes);
 
 // Rotas de vendas (relatórios do vendedor)
