@@ -42,14 +42,13 @@ app.get('/api/produtos', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-// Rota para servir imagens de produtos (remova verifyToken se quiser público)
-app.get('/uploads/produtos/:img', verifyToken, (req, res) => {
-// app.get('/uploads/produtos/:img', verifyToken, (req, res) => { // SE A INTENSÃO É QUE AS IMAGENS SEJAM VISTAS POR TODOS USAR SEM O VERIFYTOKEN
-  const filePath = path.join(__dirname, 'uploads', 'produtos', req.params.img);
-  res.sendFile(filePath);
+// <<<<<<< HEAD
+// Rota pública para servir imagens de produtos
+app.get('/uploads/produtos/:img', (req, res) => {
+// =======
+// Rota protegida para servir imagens de produtos
 });
 
-// Rotas de produtos (implementação própria)
 app.use('/api/produtos', produtoRoutes);
 
 // Rotas de vendas (relatórios do vendedor)

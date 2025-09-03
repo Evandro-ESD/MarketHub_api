@@ -15,6 +15,10 @@ router.get('/', produtoController.getAllProdutos);
 // Criar produto com upload de imagem (apenas VENDEDOR)
 router.post('/', verifyPerfil('VENDEDOR'), uploadProduto.single('foto'), produtoController.createProduto);
 
+// Listar produtos por id de vendedor logado 
+router.get('/meus-produtos', verifyPerfil('VENDEDOR'), produtoController.getProdutosByToken);
+
+
 // Editar produto (apenas VENDEDOR e só o próprio produto)
 router.put('/:id_produto', verifyPerfil('VENDEDOR'), productOwnerMiddleware, uploadProduto.single('foto'), produtoController.updateProduto);
 
