@@ -101,14 +101,8 @@ exports.deleteProduto = async (req, res, next) => {
       .eq('id_produto', id_produto);
     if (deleteError) throw deleteError;
 
-    // Deletar foto do Storage
-    if (produto.foto) {
-      const nomeArquivo = produto.foto.split('/').pop();
-      const { error: storageError } = await supabase.storage.from('fotos-produtos').remove([nomeArquivo]);
-      if (storageError) console.error(`Falha ao excluir arquivo ${nomeArquivo}:`, storageError);
-    }
-
     res.json({ message: 'Produto excluído com sucesso' });
+    return;
   } catch (err) {
     next(err);
   }
