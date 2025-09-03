@@ -61,11 +61,63 @@ exports.createProduto = async (req, res, next) => {
 exports.updateProduto = async (req, res, next) => {
   try {
     const { id_produto } = req.params;
-    const { nome_produto, descricao, preco, estoque } = req.body;
+    // req.body pode ser string (quando multipart), então precisamos tratar
+    let { nome_produto, descricao, preco, estoque } = req.body;
 
+    // Se algum campo vier como string (por causa do FormData), converter
+    if (typeof preco === 'string') preco = parseFloat(preco);
+    if (typeof estoque === 'string') estoque = parseInt(estoque);
+
+    // Buscar produto atual para pegar a foto antiga
+    const { data: produtoAtual, error: fetchError } = await supabase
+      .from('produtos')
+      .select('foto')
+      .eq('id_produto', id_produto)
+      .single();
+    if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+    if (!produtoAtual) return res.status(404).json({ message: 'Produto não encontrado' });
+
+    let fotoUrl = produtoAtual.foto;
+
+    // Se veio arquivo novo, faz upload e apaga o antigo
+    if (req.file) {
+      const id_vendedor = req.user.id_usuario;
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const novoNomeArquivo = `${id_vendedor}-${crypto.randomBytes(16).toString('hex')}${ext}`;
+
+      // Upload nova foto
+      const { error: uploadError } = await supabase.storage
+        .from('fotos-produtos')
+        .upload(novoNomeArquivo, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+      if (uploadError) throw uploadError;
+
+      // Obter URL pública
+      const { data: publicUrlData } = supabase.storage
+        .from('fotos-produtos')
+        .getPublicUrl(novoNomeArquivo);
+      fotoUrl = publicUrlData.publicUrl;
+
+      // Apagar foto antiga se existir
+      if (produtoAtual.foto) {
+        const nomeArquivoAntigo = produtoAtual.foto.split('/').pop();
+        await supabase.storage.from('fotos-produtos').remove([nomeArquivoAntigo]);
+      }
+    } else if (req.body.foto === '') {
+      // Se o campo foto veio vazio, remove a foto antiga
+      if (produtoAtual.foto) {
+        const nomeArquivoAntigo = produtoAtual.foto.split('/').pop();
+        await supabase.storage.from('fotos-produtos').remove([nomeArquivoAntigo]);
+      }
+      fotoUrl = null;
+    }
+
+    // Atualizar produto
     const { data, error } = await supabase
       .from('produtos')
-      .update({ nome_produto, descricao, preco, estoque })
+      .update({ nome_produto, descricao, preco, estoque, foto: fotoUrl })
       .eq('id_produto', id_produto)
       .select()
       .single();

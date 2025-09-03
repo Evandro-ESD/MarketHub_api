@@ -20,7 +20,7 @@ router.get('/meus-produtos', verifyPerfil('VENDEDOR'), produtoController.getProd
 
 
 // Editar produto (apenas VENDEDOR e só o próprio produto)
-router.put('/:id_produto', verifyPerfil('VENDEDOR'), productOwnerMiddleware, produtoController.updateProduto);
+router.put('/:id_produto', verifyPerfil('VENDEDOR'), productOwnerMiddleware, uploadProduto.single('foto'), produtoController.updateProduto);
 
 // Excluir produto (apenas VENDEDOR e só o próprio produto)
 router.delete('/:id_produto', verifyPerfil('VENDEDOR'), productOwnerMiddleware, produtoController.deleteProduto);
